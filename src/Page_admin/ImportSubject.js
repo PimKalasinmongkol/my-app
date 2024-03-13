@@ -21,33 +21,62 @@ function ImportSubject() {
     const [buttonText_delete, setButtonText_delete] = useState("เลือกทั้งหมด");
 
   ////////////////////open/////////////////////
-    const handleCheckboxChange_open = (id) => {
-        setSelectedItems_open({
-        ...selectedItems_open,
-        [id]: !selectedItems_open[id],
-        });
-    };
+  const handleCheckboxChange_open = (id) => {
+    setSelectedItems_open({
+      ...selectedItems_open,
+      [id]: !selectedItems_open[id],
+    });
+  };
 
-    const handleCheckAll_open = () => {
-        const allSelected_open = {}; // Object to store selected state for all items
-        const allSelected = Object.values(selectedItems_open).every(
-        (value) => value
-        ); // Check if all items are currently selected
+  const handleCheckboxChange_open_unChecked = (id) => {
+      const updatedItems = { ...selectedItems_open };
+      delete updatedItems[id]; 
+      setSelectedItems_open(updatedItems);
+  };
 
-        // If all items are currently selected, deselect all; otherwise, select all
-        filteredCourseData.forEach((item) => {
-        allSelected_open[item.subject_id] = !allSelected;
-        });
+  const handleCheckAll_open = () => {
+    const allSelected_open = {}; // Object to store selected state for all items
+    const allSelected = Object.values(selectedItems_open).every(
+      (value) => value
+    ); // Check if all items are currently selected
 
-        // Update selectedItems_open state with allSelected_open
-        setSelectedItems_open(allSelected_open);
+    // If all items are currently selected, deselect all; otherwise, select all
+    filteredCourseData.forEach((item) => {
+      allSelected_open[item.subject_id] = !allSelected;
+    });
 
-        if (allSelected) {
-        setButtonText_open("เลือกทั้งหมด");
-        } else {
-        setButtonText_open("ยกเลิกทั้งหมด");
-        }
-    };
+    // Update selectedItems_open state with allSelected_open
+    setSelectedItems_open(allSelected_open);
+
+    if (allSelected) {
+      setButtonText_open("เลือกทั้งหมด");
+    } else {
+      setButtonText_open("ยกเลิกทั้งหมด");
+    }
+  };
+
+  const handleOpen = async (event) => {
+    event.preventDefault();
+    try {
+      await Promise.all(
+        Object.entries(selectedItems_open)
+          .filter(([key, value]) => value) 
+          .map(async ([key, value]) => {
+            const response = await fetch(`http://localhost:4000/course/isEnableCourse/${key}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+            });
+            if (!response.ok) {
+              throw new Error(`Failed to delete item with ID: ${key}`);
+            }
+          })
+      );
+      
+      console.log("Selected items set enable successfully");
+    } catch (error) {
+      console.error("Error set enable selected items:", error);
+    }
+  };
 
     ///////////////////delete/////////////////
     const handleCheckboxChange_delete = (id) => {
@@ -420,7 +449,7 @@ function ImportSubject() {
                     value={selectedYear} // กำหนดค่า selectedYear เข้าไป
                     
                   >
-                    <option value="">หลักสูตรการศึกษา</option>
+                    
                     {years.map((year) => (
                       <option key={year} value={year}>
                         {year}
@@ -439,20 +468,31 @@ function ImportSubject() {
               <th>หน่วยกิต</th>
               <th>ประเภท</th>
               <th>
-                <div className="justify-center items-center">
-                  <div className="flex flex-row">
+                <div className="justify-center items-center w-full">
+                  <div className="flex flex-row w-full">
                     <button
                       type="button"
-                      className="p-2 my-2 mx-2 bg-red-300 rounded-lg w-1/2 hover:bg-zinc-500"
+                      className="w-full p-2 my-2 mx-2 bg-red-300 rounded-lg  hover:bg-zinc-500"
                       onClick={handleCheckAll_open}
                     >
                       {buttonText_open}
                     </button>
+                    
+                  </div>
+                  <div className="flex flex-row ">
+                  <button
+                      type="button"
+                      className="p-2 my-2 mx-2 rounded-lg bg-yes-color w-1/2 hover:bg-zinc-500"
+                      onClick={handleOpen}
+                    >
+                      เปิด
+                    </button>
                     <button
                       type="button"
                       className="p-2 my-2 mx-2 rounded-lg bg-yes-color w-1/2 hover:bg-zinc-500"
+                      onClick={handleOpen}
                     >
-                      เปิด
+                      ปิด
                     </button>
                   </div>
                 </div>
@@ -513,7 +553,7 @@ function ImportSubject() {
                     <input
                       type="checkbox"
                       className="accent-rose-color w-7 h-7"
-                      onChange={() =>handleCheckboxChange_open(item.subject_id)}
+                      onChange={(event) => event.target.checked ? handleCheckboxChange_open(item.subject_id) : handleCheckboxChange_open_unChecked(item.subject_id)}
                       checked={selectedItems_open[item.subject_id]}
                     />
                   </label>

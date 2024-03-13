@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Slidebar from "./Page_admin/Slidebar";
 import FirstPage from "./Page_admin/FirstPage";
@@ -15,16 +15,20 @@ import AddUser from "./Page_admin/AddUser";
 import './App.css';
 
 function App() {
+  const [stage ,setStage] = useState(0)
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/FirstPage" element={<FirstPage />} />
+        {stage === 1 && <Route path="/FirstPage" element={<FirstPage />} />} {/* แสดง Sidebar สำหรับ Admin */}
+        {stage === 0 && <Route path="/FirstPage" element={<FirstPage />} />} {/* แสดง Sidebar สำหรับ Teacher */}
         <Route
           path="/*"
-          element={
-            <div style={{ display: "flex" }}>
-              <Slidebar /> {/* แสดง Sidebar ทุกๆ หน้า */}
+          element=
+            {
+              <div style={{ display: "flex" }}>
+              {stage === 1 && <Slidebar />} {/* แสดง Sidebar สำหรับ Admin */}
+              {stage === 0 && <Slidebar />} {/* แสดง Sidebar สำหรับ Teacher */}
               <Routes>
                 {/* Admin Pages */}
                 <Route path="/Profile" element={<Profile />} />
@@ -37,7 +41,7 @@ function App() {
                 <Route path="/AddUser" element={<AddUser />} />
               </Routes>
             </div>
-          }
+            } 
         />
       </Routes>
     </Router>

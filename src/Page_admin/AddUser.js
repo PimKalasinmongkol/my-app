@@ -2,7 +2,7 @@ import '../style.css';
 import React ,{useState} from 'react';
 
 function AddUser() {
-    const [name ,setName] = useState('')
+  const [name ,setName] = useState('')
   const [email ,setEmail] = useState('')
   const [isAdmin ,setIsAdmin] = useState(0)
 
